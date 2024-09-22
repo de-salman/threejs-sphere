@@ -1,32 +1,32 @@
-// /src/main.js
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 
-const w = window.innerWidth;
-const h = window.innerHeight;
-
-// Renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
-renderer.setSize(w, h);
+renderer.setPixelRatio(window.devicePixelRatio);
 document.body.appendChild(renderer.domElement);
 
-// Camera
-const fov = 75;
-const aspect = w / h;
-const near = 0.1;
-const far = 10;
-const camera = new THREE.PerspectiveCamera(fov, aspect, near, far);
+const scene = new THREE.Scene();
+const camera = new THREE.PerspectiveCamera(
+  75,
+  window.innerWidth / window.innerHeight,
+  0.1,
+  10
+);
 camera.position.z = 2;
 
-// Scene
-const scene = new THREE.Scene();
+function onWindowResize() {
+  const width = window.innerWidth;
+  const height = window.innerHeight;
 
-// Orbit Controls
-const controls = new OrbitControls(camera, renderer.domElement);
-controls.enableDamping = true;
-controls.dampingFactor = 0.03;
+  camera.aspect = width / height;
+  camera.updateProjectionMatrix();
 
-// Icosahedron Geometry
+  renderer.setSize(width, height);
+}
+
+onWindowResize();
+window.addEventListener("resize", onWindowResize);
+
 const geo = new THREE.IcosahedronGeometry(1.0, 2);
 const mat = new THREE.MeshStandardMaterial({
   color: 0xffffff,
@@ -35,7 +35,6 @@ const mat = new THREE.MeshStandardMaterial({
 const mesh = new THREE.Mesh(geo, mat);
 scene.add(mesh);
 
-// Wireframe for the Icosahedron
 const wireMat = new THREE.MeshBasicMaterial({
   color: 0xffffff,
   wireframe: true,
@@ -44,15 +43,18 @@ const wireMesh = new THREE.Mesh(geo, wireMat);
 wireMesh.scale.setScalar(1.001);
 mesh.add(wireMesh);
 
-// Hemisphere Light
 const hemiLight = new THREE.HemisphereLight(0x0099ff, 0xaa5500);
 scene.add(hemiLight);
 
-// Animation loop
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.enableDamping = true;
+controls.dampingFactor = 0.03;
+
 function animate(t = 0) {
   requestAnimationFrame(animate);
   mesh.rotation.y = t * 0.0002;
   renderer.render(scene, camera);
   controls.update();
 }
+
 animate();
